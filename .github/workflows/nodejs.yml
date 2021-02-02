@@ -44,13 +44,3 @@ jobs:
 
       - name: Run tests
         run: make test
-
-      - name: Test & publish code coverage
-        # Publish code coverage on Code Climate
-      uses: paambaati/codeclimate-action@v2.7.4
-      # Add Code Climate secret key
-      env:
-        CC_TEST_REPORTER_ID: ${{ secrets.CC_TEST }}
-      with:
-        coverageCommand: make test-coverage
-        debug: true
