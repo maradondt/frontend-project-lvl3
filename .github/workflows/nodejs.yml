@@ -46,7 +46,7 @@ jobs:
         run: make test
 
       - name: Test & publish code coverage
-      # Publish code coverage on Code Climate
+        # Publish code coverage on Code Climate
       uses: paambaati/codeclimate-action@v2.7.4
       # Add Code Climate secret key
       env:
