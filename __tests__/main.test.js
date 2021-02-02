@@ -1,3 +1,5 @@
+import example from '../src/exampleforchecktest.js';
+
 test('example', () => {
-  expect(1).toBe(1);
+  expect(example()).toBeTruthy();
 });
