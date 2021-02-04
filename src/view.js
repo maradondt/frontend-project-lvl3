@@ -3,10 +3,11 @@ import onChange from 'on-change';
 import _ from 'lodash';
 
 const state = {
-  rrsLinks: [],
+  rssLinks: [],
   form: {
     state: 'valid',
     value: '',
+    errors: {},
   },
   feeds: [],
   networkErrors: [],
@@ -45,6 +46,16 @@ const renderItems = (feeds) => feeds
     return row;
   });
 
+const renderErrors = (e) => {
+  const feedback = document.querySelector('.feedback');
+  if (!e.message) {
+    feedback.textContent = '';
+    feedback.classList.remove('text-danger');
+  }
+  feedback.textContent = e.message;
+  feedback.classList.add('text-danger');
+};
+
 const render = ({ feeds }) => {
   const content = document.querySelector('#content');
   content.innerHTML = '';
@@ -68,6 +79,9 @@ const watchedState = onChange(state, (path, value) => {
       break;
     case ('feeds'):
       render(watchedState);
+      break;
+    case ('form.errors'):
+      renderErrors(state.form.errors);
       break;
     default:
       break;

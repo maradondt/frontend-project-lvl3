@@ -17,9 +17,14 @@ const parseItems = (xmlDoc) => Array.from(xmlDoc.querySelectorAll('item'))
     ];
   }, []);
 
+const checkRss = (doc) => doc.children[0].tagName === 'rss';
+
 export default function parserRSS(string) {
   const parser = new DOMParser();
   const doc = parser.parseFromString(string, 'application/xml');
+  if (!checkRss(doc)) {
+    throw new Error('this url does not contain valid rss');
+  }
   const title = doc.querySelector('title').textContent;
   const description = doc.querySelector('description').textContent;
   const items = parseItems(doc);
