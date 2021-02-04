@@ -27,6 +27,12 @@ export default function parserRSS(string) {
   }
   const title = doc.querySelector('title').textContent;
   const description = doc.querySelector('description').textContent;
+  const id = _.uniqueId('feed');
   const items = parseItems(doc);
-  return { title, description, items };
+  return {
+    title,
+    description,
+    items,
+    id,
+  };
 }

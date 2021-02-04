@@ -1,4 +1,3 @@
-import './scss/index.scss';
 import axios from 'axios';
 import state from './view.js';
 import parserRSS from './parserRSS.js';
@@ -29,12 +28,14 @@ export default function init() {
             state.feeds = [...state.feeds, rssContent];
           }).catch((err) => {
             state.form.errors = err;
+            throw err;
           });
         input.value = '';
       })
       .catch((err) => {
         state.form.state = 'invalid';
         state.form.errors = err;
+        throw err;
       });
   };
 
