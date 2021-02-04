@@ -1,9 +1,20 @@
+// import _ from 'lodash';
 import axios from 'axios';
+import i18next from 'i18next';
 import state from './view.js';
 import parserRSS from './parserRSS.js';
 import validateForm from './validateForm.js';
+import en from './locales/en.js';
 
-const getRRS = (url) => axios
+i18next.init({
+  lng: 'en',
+  debug: true,
+  resources: {
+    en,
+  },
+});
+
+const getRSS = (url) => axios
   .get(`https://api.allorigins.win/get?url=${url}`)
   .then((responce) => responce.data)
   .catch((err) => {
@@ -22,7 +33,7 @@ export default function init() {
         state.rssLinks = [...state.rssLinks, input.value];
         state.form.state = 'valid';
         state.form.errors = {};
-        getRRS(state.form.value)
+        getRSS(state.form.value)
           .then((data) => {
             const rssContent = parserRSS(data.contents);
             state.feeds = [...state.feeds, rssContent];
@@ -35,7 +46,7 @@ export default function init() {
       .catch((err) => {
         state.form.state = 'invalid';
         state.form.errors = err;
-        throw err;
+        // throw err;
       });
   };
 

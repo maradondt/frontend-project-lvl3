@@ -1,4 +1,5 @@
 import './scss/index.scss';
+import i18next from 'i18next';
 import onChange from 'on-change';
 import _ from 'lodash';
 import { Modal } from 'bootstrap';
@@ -69,9 +70,10 @@ const renderErrors = (e) => {
   if (!e.message) {
     feedback.textContent = '';
     feedback.classList.remove('text-danger');
+  } else {
+    feedback.textContent = i18next.t(`errors.${e.message}`);
+    feedback.classList.add('text-danger');
   }
-  feedback.textContent = e.message;
-  feedback.classList.add('text-danger');
 };
 
 const render = ({ feeds }) => {

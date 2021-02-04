@@ -1,12 +1,22 @@
 import * as yup from 'yup';
 
+yup.setLocale({
+  string: {
+    url: 'url',
+  },
+  mixed: {
+    default: 'Invalid',
+    notOneOf: 'arr',
+  },
+});
+
 // const validateForm = (fields) => schema.isValid(fields);
 const validateForm = (fields, urlCollection) => {
   const schema = yup.object().shape({
     url: yup.string()
-      .url('is not url')
-      .required('reqired')
-      .notOneOf(urlCollection, 'This url already added'),
+      .url()
+      .required()
+      .notOneOf(urlCollection),
   });
   return schema.validate(fields);
 };
