@@ -102,18 +102,20 @@ export default function init() {
             const newPosts = createPosts(feedData.posts, newFeed.id);
             state.feeds = [...state.feeds, newFeed];
             updatePosts(state, newPosts);
+            state.form.state = 'loaded';
             if (state.feeds.length < 2) {
               autoupdate(state);
             }
             input.value = '';
+            state.form.state = '';
           }).catch((err) => {
-            state.form.errors = [err.message, ...state.form.errors];
+            state.form.errors = [err.message];
             // throw err;
           });
       })
       .catch((err) => {
         state.form.state = 'invalid';
-        state.form.errors = [err.message, ...state.form.errors];
+        state.form.errors = [err.message];
         // throw err;
       });
   };

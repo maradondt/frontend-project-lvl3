@@ -1,5 +1,8 @@
 export default {
   translation: {
+    success: {
+      loaded: 'Rss has been loaded',
+    },
     errors: {
       rss: 'Not valid rss content',
       url: 'Please enter the correct url',
