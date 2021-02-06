@@ -5,14 +5,14 @@ const parseItems = (xmlDoc) => Array.from(xmlDoc.querySelectorAll('item'))
     const title = item.querySelector('title').textContent;
     const description = item.querySelector('description').textContent;
     const link = item.querySelector('link').textContent;
-    // const id = _.uniqueId();
+    const date = item.querySelector('pubDate').textContent;
     return [
       ...acc,
       {
         title,
         description,
         link,
-        // id,
+        date,
       },
     ];
   }, []);
@@ -27,12 +27,9 @@ export default function parserRSS(string) {
   }
   const title = doc.querySelector('title').textContent;
   const description = doc.querySelector('description').textContent;
-  // const id = _.uniqueId('feed');
-  const items = parseItems(doc);
+  const posts = parseItems(doc);
   return {
-    title,
-    description,
-    items,
-    // id,
+    feed: { title, description },
+    posts,
   };
 }
