@@ -1,17 +1,19 @@
 import onChange from 'on-change';
-import i18next from 'i18next';
+// import i18next from 'i18next';
 import markReadedPost from './markReadedPost';
 import renderErrors from './renderErrors';
 import renderFeeds from './renderFeeds';
 import renderPosts from './renderPosts';
 import showModal from './showModal';
+import processStateHandler from './processStateHandler';
 
 const state = {
   rssLinks: [],
   form: {
-    state: 'valid',
+    valid: true,
     value: '',
     errors: [],
+    processState: 'filling',
   },
   feeds: [],
   posts: [],
@@ -23,32 +25,18 @@ const state = {
   lastUpdatedAt: 0,
 };
 
-const removeFeedback = () => {
-  const feedback = document.querySelector('.feedback');
-  if (feedback.childNodes) {
-    feedback.innerHTML = '';
-  }
-};
-
-const renderSuccess = (message) => {
-  const feedback = document.querySelector('.feedback');
-  removeFeedback();
-  feedback.textContent = i18next.t(`success.${message}`);
-  feedback.classList.add('text-success');
-};
-
 const watchedState = onChange(state, (path, value) => {
   const input = document.querySelector('input[name="url"]');
   switch (path) {
-    case ('form.state'):
-      if (value === 'invalid') {
+    case ('form.valid'):
+      if (!value) {
         input.classList.add('is-invalid');
         break;
       }
-      if (value === 'loaded') {
-        renderSuccess(value);
-      }
       input.classList.remove('is-invalid');
+      break;
+    case ('form.processState'):
+      processStateHandler(value);
       break;
     case ('feeds'):
       renderFeeds(value);
@@ -58,7 +46,6 @@ const watchedState = onChange(state, (path, value) => {
       break;
     case ('form.errors'):
       renderErrors(value);
-      console.log(value);
       break;
     case ('uiState.readedPosts'):
       markReadedPost(value);

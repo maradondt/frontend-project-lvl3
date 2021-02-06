@@ -30,9 +30,8 @@ const getRSS = (url) => axios
   // .get(`https://api.allorigins.win/get?url=${url}`)
   .get(`https://hexlet-allorigins.herokuapp.com/get?disableCache=true&url=${url}`)
   .then((responce) => responce.data)
-  .catch((err) => {
-    state.networkErrors = err;
-    throw err;
+  .catch(() => {
+    state.networkErrors = ['networkUpdateIssue'];
   });
 
 const initModal = () => {
@@ -76,8 +75,7 @@ const autoupdate = (feedState) => {
         }
       })
       .catch((err) => {
-        // upState.form.processState = 'failed';
-        upState.form.errors = [...upState.form.errors, 'networkUpdateIssue'];
+        upState.form.errors = ['networkUpdateIssue'];
         throw new Error(err);
       });
   });
@@ -92,9 +90,9 @@ export default function init() {
     event.preventDefault();
     validateForm({ url: state.form.value }, state.rssLinks)
       .then(() => {
-        state.rssLinks = [...state.rssLinks, state.form.value];
-        state.form.state = 'valid';
+        state.form.valid = true;
         state.form.errors = [];
+        state.form.processState = 'sending';
         getRSS(state.form.value)
           .then((data) => {
             const feedData = parserRSS(data.contents);
@@ -102,25 +100,28 @@ export default function init() {
             const newPosts = createPosts(feedData.posts, newFeed.id);
             state.feeds = [...state.feeds, newFeed];
             updatePosts(state, newPosts);
-            state.form.state = 'loaded';
+            state.form.processState = 'finished';
+            state.rssLinks = [...state.rssLinks, state.form.value];
             if (state.feeds.length < 2) {
               autoupdate(state);
             }
             input.value = '';
-            state.form.state = '';
+            state.form.valid = 'true';
           }).catch((err) => {
+            state.form.processState = 'failed';
             state.form.errors = [err.message];
             // throw err;
           });
       })
       .catch((err) => {
-        state.form.state = 'invalid';
+        state.form.valid = false;
         state.form.errors = [err.message];
         // throw err;
       });
   };
 
   input.addEventListener('keyup', ({ target }) => {
+    state.form.processState = 'filling';
     state.form.value = target.value;
   });
 
