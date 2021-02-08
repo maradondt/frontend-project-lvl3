@@ -74,10 +74,10 @@ const autoupdate = (state) => {
           watchedState.updated = false;
         }
       })
-      .catch((err) => {
+      .catch(() => {
+        const err = new Error('Update Error');
         watchedState.networkErrors = [...watchedState.networkErrors, err];
-        // console.warn(err);
-        throw new Error('Update Error');
+        console.warn(err);
       });
   });
   setTimeout(autoupdate, delayInSeconds * 1000, watchedState);
@@ -132,15 +132,13 @@ export default function init() {
           .catch((err) => {
             watchedState.form.processState = 'failed';
             watchedState.form.errors = [...watchedState.form.errors, err];
-            // console.warn(err);
-            throw err;
+            console.warn(err);
           });
       })
       .catch((err) => {
         watchedState.form.valid = false;
         watchedState.form.errors = [...watchedState.form.errors, err];
-        // console.warn(err);
-        throw err;
+        console.warn(err);
       });
   };
 
