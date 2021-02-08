@@ -7,7 +7,7 @@ export default {
       'invalid-rss': 'This source doesn\'t contain valid rss',
       'invalid-url': 'Must be valid url',
       'rss already exist': 'Rss already exists',
-      networkUpdateIssue: 'Network error',
+      'Network Error': 'Network error',
     },
   },
 };

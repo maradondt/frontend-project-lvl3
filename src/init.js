@@ -27,8 +27,8 @@ const createPosts = (posts, feedId) => posts
 const getRSS = (url) => axios
   .get(`https://hexlet-allorigins.herokuapp.com/get?disableCache=true&url=${url}`)
   .then((responce) => responce.data)
-  .catch(() => {
-    throw new Error('networkUpdateIssue');
+  .catch((err) => {
+    throw new Error(err.message);
   });
 
 const initModal = (state) => {
@@ -38,7 +38,7 @@ const initModal = (state) => {
     if (target.dataset.target === '#modal') {
       const id = target.dataset.preview;
       const showedPostIndex = watchedState.posts.findIndex((post) => id === post.id);
-      watchedState.uiState.showPostIndex = showedPostIndex;
+      watchedState.uiState.showedPost = watchedState.posts[showedPostIndex];
       watchedState.uiState.readedPosts = [...watchedState.uiState.readedPost, id];
     }
   });
@@ -95,7 +95,7 @@ export default function init() {
     posts: [],
     uiState: {
       readedPost: [],
-      showPostIndex: '',
+      showedPost: {},
     },
     lastUpdatedAt: 0,
   };
@@ -128,7 +128,7 @@ export default function init() {
           .catch((err) => {
             watchedState.form.processState = 'failed';
             watchedState.form.errors = [err.message];
-            console.error(err);
+            console.warn(err);
           });
       })
       .catch((err) => {
