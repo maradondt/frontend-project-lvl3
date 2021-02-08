@@ -1,7 +1,7 @@
 import _ from 'lodash';
 import axios from 'axios';
 import i18next from 'i18next';
-import state from './view/view.js';
+import watch from './view/view.js';
 import parserRSS from './parserRSS.js';
 import validateForm from './validateForm.js';
 import en from './locales/en.js';
@@ -31,14 +31,15 @@ const getRSS = (url) => axios
     throw new Error('networkUpdateIssue');
   });
 
-const initModal = () => {
+const initModal = (state) => {
+  const watchedState = state;
   const postsContainer = document.querySelector('#posts');
   postsContainer.addEventListener('click', ({ target }) => {
     if (target.dataset.target === '#modal') {
       const id = target.dataset.preview;
-      const showedPostIndex = state.posts.findIndex((post) => id === post.id);
-      state.uiState.showPostIndex = showedPostIndex;
-      state.uiState.readedPosts = [...state.uiState.readedPost, id];
+      const showedPostIndex = watchedState.posts.findIndex((post) => id === post.id);
+      watchedState.uiState.showPostIndex = showedPostIndex;
+      watchedState.uiState.readedPosts = [...watchedState.uiState.readedPost, id];
     }
   });
 };
@@ -50,81 +51,98 @@ const createFeed = ({ title, description }, url) => ({
   url,
 });
 
-const updatePosts = (feedState, posts) => {
-  const upState = feedState;
-  upState.posts = [...posts, ...upState.posts];
-  upState.lastUpdatedAt = Date.now();
+const updatePosts = (state, posts) => {
+  const watchedState = state;
+  watchedState.posts = [...posts, ...watchedState.posts];
+  watchedState.lastUpdatedAt = Date.now();
 };
 
-const autoupdate = (feedState) => {
-  const upState = feedState;
+const autoupdate = (state) => {
+  const watchedState = state;
   const delayInSeconds = 5;
-  upState.updated = true;
-  upState.feeds.forEach((feed) => {
+  watchedState.updated = true;
+  watchedState.feeds.forEach((feed) => {
     getRSS(feed.url)
       .then((data) => parserRSS(data.contents))
       .then(({ posts }) => createPosts(posts, feed.id))
-      .then((posts) => posts.filter((post) => Date.parse(post.date) > upState.lastUpdatedAt))
+      .then((posts) => posts.filter((post) => Date.parse(post.date) > watchedState.lastUpdatedAt))
       .then((newPosts) => {
         if (newPosts.length > 0) {
-          updatePosts(upState, newPosts);
-          upState.updated = false;
+          updatePosts(watchedState, newPosts);
+          watchedState.updated = false;
         }
       })
       .catch((err) => {
-        upState.errors = [err.message];
+        watchedState.errors = [err.message];
         console.warn(err);
       });
   });
-  setTimeout(autoupdate, delayInSeconds * 1000, upState);
+  setTimeout(autoupdate, delayInSeconds * 1000, watchedState);
 };
 
 export default function init() {
   const input = document.querySelector('[name="url"]');
   const form = document.querySelector('form.rss-form');
+  const state = {
+    rssLinks: [],
+    form: {
+      valid: true,
+      value: '',
+      errors: [],
+      processState: 'filling',
+    },
+    feeds: [],
+    posts: [],
+    uiState: {
+      readedPost: [],
+      showPostIndex: '',
+    },
+    lastUpdatedAt: 0,
+  };
+  const watchedState = watch(state);
 
   const submitHandler = (event) => {
     event.preventDefault();
-    validateForm({ url: state.form.value }, state.rssLinks)
+    validateForm({ url: watchedState.form.value }, watchedState.rssLinks)
       .then(() => {
-        state.form.valid = true;
-        state.form.errors = [];
-        state.form.processState = 'sending';
-        getRSS(state.form.value)
+        watchedState.form.valid = true;
+        watchedState.form.errors = [];
+        watchedState.form.processState = 'sending';
+        getRSS(watchedState.form.value)
           .then((data) => parserRSS(data.contents))
           .then((feedData) => {
-            const newFeed = createFeed(feedData.feed, state.form.value);
+            const newFeed = createFeed(feedData.feed, watchedState.form.value);
             const newPosts = createPosts(feedData.posts, newFeed.id);
-            state.feeds = [...state.feeds, newFeed];
-            updatePosts(state, newPosts);
+            watchedState.feeds = [...watchedState.feeds, newFeed];
+            updatePosts(watchedState, newPosts);
           })
           .then(() => {
-            state.rssLinks = [...state.rssLinks, state.form.value];
-            if (state.feeds.length < 2) {
-              autoupdate(state);
+            watchedState.rssLinks = [...watchedState.rssLinks, watchedState.form.value];
+            if (watchedState.feeds.length < 2) {
+              autoupdate(watchedState);
             }
-            state.form.processState = 'finished';
+            watchedState.form.processState = 'finished';
             input.value = '';
-            state.form.valid = 'true';
+            watchedState.form.valid = 'true';
           })
           .catch((err) => {
-            state.form.processState = 'failed';
-            state.form.errors = [err.message];
+            watchedState.form.processState = 'failed';
+            watchedState.form.errors = [err.message];
             console.error(err);
           });
       })
       .catch((err) => {
-        state.form.valid = false;
-        state.form.errors = [err.message];
+        watchedState.form.valid = false;
+        watchedState.form.errors = [err.message];
         console.warn(err);
       });
   };
 
   input.addEventListener('keyup', ({ target }) => {
-    state.form.processState = 'filling';
-    state.form.value = target.value;
+    watchedState.form.processState = 'filling';
+    watchedState.form.value = target.value;
   });
 
   form.addEventListener('submit', submitHandler);
-  initModal();
+  initModal(watchedState);
 }
