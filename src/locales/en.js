@@ -6,7 +6,7 @@ export default {
     errors: {
       rss: 'This source doesn\'t contain valid rss',
       url: 'Must be valid url',
-      arr: 'Rss already exists',
+      arr: 'Rss has been loaded',
       networkUpdateIssue: 'Network error',
     },
   },

@@ -9,7 +9,6 @@ import en from './locales/en.js';
 
 i18next.init({
   lng: 'en',
-  debug: true,
   resources: {
     en,
   },
@@ -27,11 +26,11 @@ const createPosts = (posts, feedId) => posts
   }));
 
 const getRSS = (url) => axios
-  // .get(`https://api.allorigins.win/get?url=${url}`)
   .get(`https://hexlet-allorigins.herokuapp.com/get?disableCache=true&url=${url}`)
   .then((responce) => responce.data)
-  .catch(() => {
+  .catch((err) => {
     state.networkErrors = ['networkUpdateIssue'];
+    throw new Error(err);
   });
 
 const initModal = () => {
@@ -75,8 +74,8 @@ const autoupdate = (feedState) => {
         }
       })
       .catch((err) => {
-        upState.form.errors = ['networkUpdateIssue'];
-        throw new Error(err);
+        upState.errors = [err.message];
+        console.warn(err);
       });
   });
   setTimeout(autoupdate, delayInSeconds * 1000, upState);
@@ -110,6 +109,7 @@ export default function init() {
           }).catch((err) => {
             state.form.processState = 'failed';
             state.form.errors = [err.message];
+            console.warn(err);
             // throw err;
           });
       })
