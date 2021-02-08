@@ -27,10 +27,7 @@ const createPosts = (posts, feedId) => posts
 const getRSS = (url) => axios
   .get(`https://hexlet-allorigins.herokuapp.com/get?disableCache=true&url=${url}`)
   .then((responce) => responce.data)
-  .catch((err) => {
-    // const watchedState = state;
-    // watchedState.networkErrors = [...watchedState.networkErrors, err];
-    console.warn(err);
+  .catch(() => {
     throw new Error('Network Error');
   });
 
