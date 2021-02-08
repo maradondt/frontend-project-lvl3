@@ -31,8 +31,7 @@ const getProxyUrl = (url) => `https://hexlet-allorigins.herokuapp.com/get?url=${
 const getRSS = (url) => axios
   .get(getProxyUrl(url))
   .then((responce) => responce.data)
-  .catch((e) => {
-    console.warn(e);
+  .catch(() => {
     throw new Error('Network Error');
   });
 
@@ -80,7 +79,6 @@ const autoupdate = (state) => {
       .catch(() => {
         const err = new Error('Update Error');
         watchedState.networkErrors = [...watchedState.networkErrors, err];
-        console.warn(err);
       });
   });
   setTimeout(autoupdate, delayInSeconds * 1000, watchedState);
@@ -131,7 +129,6 @@ export default function init() {
       })
       .catch((err) => {
         handleErrors(err, watchedState);
-        console.warn(err);
       });
   };
 
@@ -146,7 +143,6 @@ export default function init() {
       watchedState.form.processState = 'sending';
       loadRss();
     } catch (err) {
-      console.warn(err);
       handleErrors(err, watchedState);
     }
   };

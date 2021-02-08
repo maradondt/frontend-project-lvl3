@@ -14,8 +14,8 @@ const validateForm = (urlCollection) => {
   const schema = yup.object().shape({
     url: yup.string()
       .url()
-      .required()
-      .notOneOf(urlCollection),
+      .notOneOf(urlCollection)
+      .required(),
   });
   return schema;
 };
