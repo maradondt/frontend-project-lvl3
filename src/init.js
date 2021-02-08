@@ -24,10 +24,21 @@ const createPosts = (posts, feedId) => posts
     date,
   }));
 
+const handleErrors = (err, state) => {
+  const watchedState = state;
+  watchedState.form.errors = [...watchedState.form.errors, err];
+  if (err.message === 'Network Error' || err.message === 'invalid-rss') {
+    watchedState.form.processState = 'failed';
+  } else {
+    watchedState.form.valid = false;
+  }
+};
+
 const getRSS = (url) => axios
   .get(`https://hexlet-allorigins.herokuapp.com/get?disableCache=true&url=${url}`)
   .then((responce) => responce.data)
-  .catch(() => {
+  .catch((e) => {
+    console.warn(e);
     throw new Error('Network Error');
   });
 
@@ -110,32 +121,26 @@ export default function init() {
         watchedState.form.valid = true;
         watchedState.form.errors = [];
         watchedState.form.processState = 'sending';
-        getRSS(watchedState.form.value)
-          .then((data) => parserRSS(data.contents))
-          .then((feedData) => {
-            const newFeed = createFeed(feedData.feed, watchedState.form.value);
-            const newPosts = createPosts(feedData.posts, newFeed.id);
-            watchedState.feeds = [...watchedState.feeds, newFeed];
-            updatePosts(watchedState, newPosts);
-          })
-          .then(() => {
-            watchedState.rssLinks = [...watchedState.rssLinks, watchedState.form.value];
-            if (watchedState.feeds.length < 2) {
-              autoupdate(watchedState);
-            }
-            watchedState.form.processState = 'finished';
-            input.value = '';
-            watchedState.form.valid = 'true';
-          })
-          .catch((err) => {
-            watchedState.form.processState = 'failed';
-            watchedState.form.errors = [...watchedState.form.errors, err];
-            console.warn(err);
-          });
+      })
+      .then(() => getRSS(watchedState.form.value))
+      .then((data) => parserRSS(data.contents))
+      .then((feedData) => {
+        const newFeed = createFeed(feedData.feed, watchedState.form.value);
+        const newPosts = createPosts(feedData.posts, newFeed.id);
+        watchedState.feeds = [...watchedState.feeds, newFeed];
+        updatePosts(watchedState, newPosts);
+      })
+      .then(() => {
+        watchedState.rssLinks = [...watchedState.rssLinks, watchedState.form.value];
+        if (watchedState.feeds.length < 2) {
+          autoupdate(watchedState);
+        }
+        watchedState.form.processState = 'finished';
+        input.value = '';
+        watchedState.form.valid = 'true';
       })
       .catch((err) => {
-        watchedState.form.valid = false;
-        watchedState.form.errors = [...watchedState.form.errors, err];
+        handleErrors(err, watchedState);
         console.warn(err);
       });
   };
