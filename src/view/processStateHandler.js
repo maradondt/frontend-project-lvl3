@@ -19,7 +19,7 @@ export default function processStateHandler(value) {
   const submit = document.querySelector('[type="submit"]');
   switch (value) {
     case ('filling'):
-      removeFeedback();
+      // removeFeedback();
       break;
     case ('sending'):
       input.readOnly = true;
@@ -36,7 +36,7 @@ export default function processStateHandler(value) {
       submit.disabled = false;
       break;
     default:
-      console.log('undefined state', value);
+      console.log('Unknow state ', value);
       break;
   }
 }

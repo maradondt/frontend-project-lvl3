@@ -47,9 +47,9 @@ const watchedState = onChange(state, (path, value) => {
     case ('form.errors'):
       renderErrors(value);
       break;
-    case ('networkErrors'):
-      renderErrors(value);
-      break;
+    // case ('networkErrors'):
+    //   renderErrors(value);
+    //   break;
     case ('uiState.readedPosts'):
       markReadedPost(value);
       break;

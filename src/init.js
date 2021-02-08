@@ -26,7 +26,8 @@ const createPosts = (posts, feedId) => posts
   }));
 
 const getRSS = (url) => axios
-  .get(`https://hexlet-allorigins.herokuapp.com/get?disableCache=true&url=${url}`)
+  // .get(`https://hexlet-allorigins.herokuapp.com/get?disableCache=true&url=${url}`) Proxy url
+  .get(url)
   .then((responce) => responce.data)
   .catch((err) => {
     state.networkErrors = ['networkUpdateIssue'];
@@ -76,6 +77,7 @@ const autoupdate = (feedState) => {
       .catch((err) => {
         upState.errors = [err.message];
         console.warn(err);
+        console.log(state);
       });
   });
   setTimeout(autoupdate, delayInSeconds * 1000, upState);
