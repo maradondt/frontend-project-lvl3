@@ -123,7 +123,6 @@ export default function init() {
   input.addEventListener('keyup', ({ target }) => {
     state.form.processState = 'filling';
     state.form.value = target.value;
-    console.log(`input value = ${target.value}`);
   });
 
   form.addEventListener('submit', submitHandler);
