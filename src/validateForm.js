@@ -2,15 +2,14 @@ import * as yup from 'yup';
 
 yup.setLocale({
   string: {
-    url: 'url',
+    url: 'invalid-url',
   },
   mixed: {
     default: 'Invalid',
-    notOneOf: 'arr',
+    notOneOf: 'rss already exist',
   },
 });
 
-// const validateForm = (fields) => schema.isValid(fields);
 const validateForm = (fields, urlCollection) => {
   const schema = yup.object().shape({
     url: yup.string()

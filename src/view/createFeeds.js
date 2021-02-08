@@ -8,7 +8,7 @@ const createFeeds = (feeds) => {
   </li>
 </ul>
   `);
-  return `<ul class="list-group">${feedsList.join('')}</ul>`;
+  return `<h2>Feeds</h2><ul class="list-group">${feedsList.join('')}</ul>`;
 };
 
 export default createFeeds;

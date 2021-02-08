@@ -19,7 +19,8 @@ export default function processStateHandler(value) {
   const submit = document.querySelector('[type="submit"]');
   switch (value) {
     case ('filling'):
-      // removeFeedback();
+      input.readOnly = false;
+      submit.disabled = false;
       break;
     case ('sending'):
       input.readOnly = true;

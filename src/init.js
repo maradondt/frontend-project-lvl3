@@ -1,7 +1,6 @@
 import _ from 'lodash';
 import axios from 'axios';
 import i18next from 'i18next';
-// import { Modal } from 'bootstrap';
 import state from './view/view.js';
 import parserRSS from './parserRSS.js';
 import validateForm from './validateForm.js';
@@ -27,7 +26,6 @@ const createPosts = (posts, feedId) => posts
 
 const getRSS = (url) => axios
   .get(`https://hexlet-allorigins.herokuapp.com/get?disableCache=true&url=${url}`)
-  // .get(url)
   .then((responce) => responce.data)
   .catch(() => {
     throw new Error('networkUpdateIssue');
@@ -93,36 +91,39 @@ export default function init() {
         state.form.errors = [];
         state.form.processState = 'sending';
         getRSS(state.form.value)
-          .then((data) => {
-            const feedData = parserRSS(data.contents);
+          .then((data) => parserRSS(data.contents))
+          .then((feedData) => {
             const newFeed = createFeed(feedData.feed, state.form.value);
             const newPosts = createPosts(feedData.posts, newFeed.id);
             state.feeds = [...state.feeds, newFeed];
             updatePosts(state, newPosts);
-            state.form.processState = 'finished';
+          })
+          .then(() => {
             state.rssLinks = [...state.rssLinks, state.form.value];
             if (state.feeds.length < 2) {
               autoupdate(state);
             }
+            state.form.processState = 'finished';
             input.value = '';
             state.form.valid = 'true';
-          }).catch((err) => {
+          })
+          .catch((err) => {
             state.form.processState = 'failed';
             state.form.errors = [err.message];
-            console.warn(err);
-            // throw err;
+            console.error(err);
           });
       })
       .catch((err) => {
         state.form.valid = false;
         state.form.errors = [err.message];
-        // throw err;
+        console.warn(err);
       });
   };
 
   input.addEventListener('keyup', ({ target }) => {
     state.form.processState = 'filling';
     state.form.value = target.value;
+    console.log(`input value = ${target.value}`);
   });
 
   form.addEventListener('submit', submitHandler);

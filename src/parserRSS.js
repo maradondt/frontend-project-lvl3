@@ -23,7 +23,7 @@ export default function parserRSS(string) {
   const parser = new DOMParser();
   const doc = parser.parseFromString(string, 'application/xml');
   if (!checkRss(doc)) {
-    throw new Error('rss');
+    throw new Error('invalid-rss');
   }
   const title = doc.querySelector('title').textContent;
   const description = doc.querySelector('description').textContent;

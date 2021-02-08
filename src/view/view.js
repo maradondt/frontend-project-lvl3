@@ -17,7 +17,6 @@ const state = {
   },
   feeds: [],
   posts: [],
-  networkErrors: [],
   uiState: {
     readedPost: [],
     showPostIndex: '',
@@ -27,6 +26,7 @@ const state = {
 
 const watchedState = onChange(state, (path, value) => {
   const input = document.querySelector('input[name="url"]');
+  console.log(`state change, path = ${path} value = ${value}`);
   switch (path) {
     case ('form.valid'):
       if (!value) {
@@ -47,9 +47,6 @@ const watchedState = onChange(state, (path, value) => {
     case ('form.errors'):
       renderErrors(value);
       break;
-    // case ('networkErrors'):
-    //   renderErrors(value);
-    //   break;
     case ('uiState.readedPosts'):
       markReadedPost(value);
       break;

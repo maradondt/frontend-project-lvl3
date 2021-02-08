@@ -4,9 +4,9 @@ export default {
       finished: 'Rss has been loaded',
     },
     errors: {
-      rss: 'This source doesn\'t contain valid rss',
-      url: 'Must be valid url',
-      arr: 'Rss has been loaded',
+      'invalid-rss': 'This source doesn\'t contain valid rss',
+      'invalid-url': 'Must be valid url',
+      'rss already exist': 'Rss already exists',
       networkUpdateIssue: 'Network error',
     },
   },
