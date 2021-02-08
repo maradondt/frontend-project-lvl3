@@ -6,13 +6,6 @@ import parserRSS from './parserRSS.js';
 import validateForm from './validateForm.js';
 import en from './locales/en.js';
 
-i18next.init({
-  lng: 'en',
-  resources: {
-    en,
-  },
-});
-
 const createPosts = (posts, feedId) => posts
   // eslint-disable-next-line object-curly-newline
   .map(({ title, description, link, date }) => ({
@@ -33,9 +26,10 @@ const handleErrors = (err, state) => {
     watchedState.form.valid = false;
   }
 };
+const getProxyUrl = (url) => `https://hexlet-allorigins.herokuapp.com/get?url=${url}&disableCache=true`;
 
 const getRSS = (url) => axios
-  .get(`https://hexlet-allorigins.herokuapp.com/get?disableCache=true&url=${url}`)
+  .get(getProxyUrl(url))
   .then((responce) => responce.data)
   .catch((e) => {
     console.warn(e);
@@ -93,6 +87,12 @@ const autoupdate = (state) => {
 };
 
 export default function init() {
+  i18next.init({
+    lng: 'en',
+    resources: {
+      en,
+    },
+  });
   const input = document.querySelector('[name="url"]');
   const form = document.querySelector('form.rss-form');
   const state = {
@@ -113,24 +113,14 @@ export default function init() {
     lastUpdatedAt: 0,
   };
   const watchedState = watch(state);
-
-  const submitHandler = (event) => {
-    event.preventDefault();
-    validateForm({ url: watchedState.form.value }, watchedState.rssLinks)
-      .then(() => {
-        watchedState.form.valid = true;
-        watchedState.form.errors = [];
-        watchedState.form.processState = 'sending';
-      })
-      .then(() => getRSS(watchedState.form.value))
+  const loadRss = () => {
+    getRSS(watchedState.form.value)
       .then((data) => parserRSS(data.contents))
       .then((feedData) => {
         const newFeed = createFeed(feedData.feed, watchedState.form.value);
         const newPosts = createPosts(feedData.posts, newFeed.id);
         watchedState.feeds = [...watchedState.feeds, newFeed];
         updatePosts(watchedState, newPosts);
-      })
-      .then(() => {
         watchedState.rssLinks = [...watchedState.rssLinks, watchedState.form.value];
         if (watchedState.feeds.length < 2) {
           autoupdate(watchedState);
@@ -143,6 +133,22 @@ export default function init() {
         handleErrors(err, watchedState);
         console.warn(err);
       });
+  };
+
+  const submitHandler = (event) => {
+    event.preventDefault();
+    try {
+      validateForm(watchedState.rssLinks).validateSync({
+        url: watchedState.form.value,
+      });
+      watchedState.form.valid = true;
+      watchedState.form.errors = [];
+      watchedState.form.processState = 'sending';
+      loadRss();
+    } catch (err) {
+      console.warn(err);
+      handleErrors(err, watchedState);
+    }
   };
 
   input.addEventListener('keyup', ({ target }) => {

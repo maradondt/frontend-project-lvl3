@@ -10,14 +10,14 @@ yup.setLocale({
   },
 });
 
-const validateForm = (fields, urlCollection) => {
+const validateForm = (urlCollection) => {
   const schema = yup.object().shape({
     url: yup.string()
       .url()
       .required()
       .notOneOf(urlCollection),
   });
-  return schema.validate(fields);
+  return schema;
 };
 
 export default validateForm;
