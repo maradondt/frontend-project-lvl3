@@ -24,13 +24,14 @@ const createPosts = (posts, feedId) => posts
     date,
   }));
 
-const getRSS = (url, state) => axios
+const getRSS = (url) => axios
   .get(`https://hexlet-allorigins.herokuapp.com/get?disableCache=true&url=${url}`)
   .then((responce) => responce.data)
   .catch((err) => {
-    const watchedState = state;
-    watchedState.networkErrors = [...watchedState.networkErrors, err];
-    throw new Error(err.message);
+    // const watchedState = state;
+    // watchedState.networkErrors = [...watchedState.networkErrors, err];
+    console.warn(err);
+    throw new Error('Network Error');
   });
 
 const initModal = (state) => {
@@ -64,7 +65,7 @@ const autoupdate = (state) => {
   const delayInSeconds = 5;
   watchedState.updated = true;
   watchedState.feeds.forEach((feed) => {
-    getRSS(feed.url, watchedState)
+    getRSS(feed.url)
       .then((data) => parserRSS(data.contents))
       .then(({ posts }) => createPosts(posts, feed.id))
       .then((posts) => posts.filter((post) => Date.parse(post.date) > watchedState.lastUpdatedAt))
@@ -112,7 +113,7 @@ export default function init() {
         watchedState.form.valid = true;
         watchedState.form.errors = [];
         watchedState.form.processState = 'sending';
-        getRSS(watchedState.form.value, watchedState)
+        getRSS(watchedState.form.value)
           .then((data) => parserRSS(data.contents))
           .then((feedData) => {
             const newFeed = createFeed(feedData.feed, watchedState.form.value);
