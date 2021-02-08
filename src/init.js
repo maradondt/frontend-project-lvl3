@@ -24,10 +24,12 @@ const createPosts = (posts, feedId) => posts
     date,
   }));
 
-const getRSS = (url) => axios
+const getRSS = (url, state) => axios
   .get(`https://hexlet-allorigins.herokuapp.com/get?disableCache=true&url=${url}`)
   .then((responce) => responce.data)
   .catch((err) => {
+    const watchedState = state;
+    watchedState.networkErrors = [...watchedState.networkErrors, err];
     throw new Error(err.message);
   });
 
@@ -62,7 +64,7 @@ const autoupdate = (state) => {
   const delayInSeconds = 5;
   watchedState.updated = true;
   watchedState.feeds.forEach((feed) => {
-    getRSS(feed.url)
+    getRSS(feed.url, watchedState)
       .then((data) => parserRSS(data.contents))
       .then(({ posts }) => createPosts(posts, feed.id))
       .then((posts) => posts.filter((post) => Date.parse(post.date) > watchedState.lastUpdatedAt))
@@ -73,8 +75,9 @@ const autoupdate = (state) => {
         }
       })
       .catch((err) => {
-        watchedState.errors = [err.message];
-        console.warn(err);
+        watchedState.networkErrors = [...watchedState.networkErrors, err];
+        // console.warn(err);
+        throw new Error('Update Error');
       });
   });
   setTimeout(autoupdate, delayInSeconds * 1000, watchedState);
@@ -91,6 +94,7 @@ export default function init() {
       errors: [],
       processState: 'filling',
     },
+    networkErrors: [],
     feeds: [],
     posts: [],
     uiState: {
@@ -108,7 +112,7 @@ export default function init() {
         watchedState.form.valid = true;
         watchedState.form.errors = [];
         watchedState.form.processState = 'sending';
-        getRSS(watchedState.form.value)
+        getRSS(watchedState.form.value, watchedState)
           .then((data) => parserRSS(data.contents))
           .then((feedData) => {
             const newFeed = createFeed(feedData.feed, watchedState.form.value);
@@ -127,14 +131,16 @@ export default function init() {
           })
           .catch((err) => {
             watchedState.form.processState = 'failed';
-            watchedState.form.errors = [err.message];
-            console.warn(err);
+            watchedState.form.errors = [...watchedState.form.errors, err];
+            // console.warn(err);
+            throw err;
           });
       })
       .catch((err) => {
         watchedState.form.valid = false;
-        watchedState.form.errors = [err.message];
-        console.warn(err);
+        watchedState.form.errors = [...watchedState.form.errors, err];
+        // console.warn(err);
+        throw err;
       });
   };
 
