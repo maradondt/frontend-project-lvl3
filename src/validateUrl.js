@@ -10,14 +10,14 @@ yup.setLocale({
   },
 });
 
-const validateForm = (urlCollection) => {
+const validateUrl = ({ rssLinks }) => {
   const schema = yup.object().shape({
     url: yup.string()
       .url()
-      .notOneOf(urlCollection)
+      .notOneOf(rssLinks)
       .required(),
   });
   return schema;
 };
 
-export default validateForm;
+export default validateUrl;

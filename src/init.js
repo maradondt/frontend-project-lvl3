@@ -4,7 +4,7 @@ import axios from 'axios';
 import i18next from 'i18next';
 import watch from './view/view.js';
 import parserRSS from './parserRSS.js';
-import validateForm from './validateForm.js';
+import validateUrl from './validateUrl.js';
 import en from './locales/en.js';
 
 const createPosts = (posts, feedId) => posts
@@ -91,7 +91,6 @@ const loadRss = (state, elements) => {
       watchedState.form.valid = 'true';
     })
     .catch((err) => {
-      console.warn(err);
       handleErrors(err, watchedState);
     });
 };
@@ -142,8 +141,9 @@ export default function init() {
     event.preventDefault();
     const formData = new FormData(event.target);
     const currentUrl = formData.get('url');
+    console.log(` url = ${currentUrl}`);
     try {
-      validateForm(watchedState.rssLinks).validateSync({
+      validateUrl(watchedState).validateSync({
         url: currentUrl,
       });
       watchedState.form.valid = true;
