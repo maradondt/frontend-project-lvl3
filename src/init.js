@@ -140,9 +140,11 @@ export default function init() {
 
   form.addEventListener('submit', (event) => {
     event.preventDefault();
+    const formData = new FormData(event.target);
+    const currentUrl = formData.get('url');
     try {
       validateForm(watchedState.rssLinks).validateSync({
-        url: watchedState.form.value,
+        url: currentUrl,
       });
       watchedState.form.valid = true;
       watchedState.form.errors = [];
