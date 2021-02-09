@@ -95,13 +95,7 @@ const loadRss = (state, elements) => {
     });
 };
 
-export default function init() {
-  i18next.init({
-    lng: 'en',
-    resources: {
-      en,
-    },
-  });
+const app = () => {
   const elements = {
     postsContainer: document.querySelector('#posts'),
     feedsContainer: document.querySelector('#feeds'),
@@ -164,4 +158,15 @@ export default function init() {
       uiState.readedPosts = [...uiState.readedPosts, id];
     }
   });
-}
+};
+
+const init = () => i18next.init({
+  lng: 'en',
+  resources: {
+    en,
+  },
+}).then(() => {
+  app();
+});
+
+export default init;
