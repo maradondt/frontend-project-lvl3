@@ -57,7 +57,8 @@ const getProxyUrl = (url) => {
 const getRSS = (url) => axios
   .get(getProxyUrl(url), { timeout: 10000 })
   .then((responce) => responce.data)
-  .catch(() => {
+  .catch((err) => {
+    console.err(err);
     throw new Error('Network Error');
   });
 
