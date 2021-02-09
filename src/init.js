@@ -1,12 +1,31 @@
 import _ from 'lodash';
 import { Modal } from 'bootstrap';
 import axios from 'axios';
+import * as yup from 'yup';
 import i18next from 'i18next';
 import watch from './view/view.js';
 import parserRSS from './parserRSS.js';
-import validateUrl from './validateUrl.js';
 import en from './locales/en.js';
 
+yup.setLocale({
+  string: {
+    url: 'invalid-url',
+  },
+  mixed: {
+    default: 'Invalid',
+    notOneOf: 'rss already exist',
+  },
+});
+
+const validateUrl = ({ rssLinks }) => {
+  const schema = yup.object().shape({
+    url: yup.string()
+      .url()
+      .notOneOf(rssLinks)
+      .required(),
+  });
+  return schema;
+};
 const createPosts = (posts, feedId) => posts
   // eslint-disable-next-line object-curly-newline
   .map(({ title, description, link, date }) => ({
