@@ -30,7 +30,7 @@ const handleErrors = (err, state) => {
 const getProxyUrl = (url) => `https://hexlet-allorigins.herokuapp.com/get?url=${url}&disableCache=true`;
 
 const getRSS = (url) => axios
-  .get(getProxyUrl(url))
+  .get(getProxyUrl(url), { timeout: 10000 })
   .then((responce) => responce.data)
   .catch(() => {
     throw new Error('Network Error');
