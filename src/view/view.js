@@ -1,5 +1,4 @@
 import onChange from 'on-change';
-// import i18next from 'i18next';
 import markReadedPost from './markReadedPost';
 import renderErrors from './renderErrors';
 import renderFeeds from './renderFeeds';
@@ -7,7 +6,7 @@ import renderPosts from './renderPosts';
 import showModal from './showModal';
 import processStateHandler from './processStateHandler';
 
-const watch = (state) => onChange(state, (path, value) => {
+const watch = (state, elements) => onChange(state, (path, value) => {
   const input = document.querySelector('input[name="url"]');
   switch (path) {
     case ('form.valid'):
@@ -18,25 +17,22 @@ const watch = (state) => onChange(state, (path, value) => {
       input.classList.remove('is-invalid');
       break;
     case ('form.processState'):
-      processStateHandler(value);
+      processStateHandler(state, elements);
       break;
     case ('feeds'):
-      renderFeeds(value);
+      renderFeeds(state, elements);
       break;
     case ('posts'):
-      renderPosts(value);
+      renderPosts(state, elements);
       break;
     case ('form.errors'):
-      renderErrors(value);
-      break;
-    case ('networkErrors'):
-      renderErrors(value);
+      renderErrors(state, elements);
       break;
     case ('uiState.readedPosts'):
-      markReadedPost(value);
+      markReadedPost(state, elements);
       break;
-    case ('uiState.showedPost'):
-      showModal(value);
+    case ('uiState.showedPostIndex'):
+      showModal(state, elements);
       break;
     default:
       break;

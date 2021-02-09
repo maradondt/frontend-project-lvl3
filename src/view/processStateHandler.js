@@ -1,23 +1,16 @@
 import i18next from 'i18next';
 
-const removeFeedback = () => {
-  const feedback = document.querySelector('.feedback');
-  if (feedback.childNodes) {
-    feedback.innerHTML = '';
-  }
-};
-
-const renderSuccess = (message) => {
-  const feedback = document.querySelector('.feedback');
-  removeFeedback();
+const renderSuccess = (message, elements) => {
+  const { feedback } = elements;
+  feedback.innerHTML = '';
   feedback.textContent = i18next.t(`success.${message}`);
   feedback.classList.add('text-success');
 };
 
-export default function processStateHandler(value) {
-  const input = document.querySelector('[name="url"]');
-  const submit = document.querySelector('[type="submit"]');
-  switch (value) {
+export default function processStateHandler({ form: { processState } }, elements) {
+  const { input, submit } = elements;
+
+  switch (processState) {
     case ('filling'):
       input.readOnly = false;
       submit.disabled = false;
@@ -27,7 +20,7 @@ export default function processStateHandler(value) {
       submit.disabled = true;
       break;
     case ('finished'):
-      renderSuccess(value);
+      renderSuccess(processState, elements);
       input.readOnly = false;
       submit.disabled = false;
       break;
@@ -37,7 +30,7 @@ export default function processStateHandler(value) {
       submit.disabled = false;
       break;
     default:
-      console.log('Unknow state ', value);
+      console.log('Unknow state ', processState);
       break;
   }
 }

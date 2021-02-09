@@ -1,4 +1,5 @@
 import _ from 'lodash';
+import { Modal } from 'bootstrap';
 import axios from 'axios';
 import i18next from 'i18next';
 import watch from './view/view.js';
@@ -35,19 +36,6 @@ const getRSS = (url) => axios
     throw new Error('Network Error');
   });
 
-const initModal = (state) => {
-  const watchedState = state;
-  const postsContainer = document.querySelector('#posts');
-  postsContainer.addEventListener('click', ({ target }) => {
-    if (target.dataset.target === '#modal') {
-      const id = target.dataset.preview;
-      const showedPostIndex = watchedState.posts.findIndex((post) => id === post.id);
-      watchedState.uiState.showedPost = watchedState.posts[showedPostIndex];
-      watchedState.uiState.readedPosts = [...watchedState.uiState.readedPost, id];
-    }
-  });
-};
-
 const createFeed = ({ title, description }, url) => ({
   title,
   description,
@@ -78,10 +66,34 @@ const autoupdate = (state) => {
       })
       .catch(() => {
         const err = new Error('Update Error');
-        watchedState.networkErrors = [...watchedState.networkErrors, err];
+        watchedState.form.errors = [...watchedState.form.errors, err];
       });
   });
   setTimeout(autoupdate, delayInSeconds * 1000, watchedState);
+};
+
+const loadRss = (state, elements) => {
+  const watchedState = state;
+  const { input } = elements;
+  getRSS(watchedState.form.value)
+    .then((data) => parserRSS(data.contents))
+    .then((feedData) => {
+      const newFeed = createFeed(feedData.feed, watchedState.form.value);
+      const newPosts = createPosts(feedData.posts, newFeed.id);
+      watchedState.feeds = [...watchedState.feeds, newFeed];
+      updatePosts(watchedState, newPosts);
+      watchedState.rssLinks = [...watchedState.rssLinks, watchedState.form.value];
+      if (watchedState.feeds.length < 2) {
+        autoupdate(watchedState);
+      }
+      watchedState.form.processState = 'finished';
+      input.value = '';
+      watchedState.form.valid = 'true';
+    })
+    .catch((err) => {
+      console.warn(err);
+      handleErrors(err, watchedState);
+    });
 };
 
 export default function init() {
@@ -91,8 +103,19 @@ export default function init() {
       en,
     },
   });
-  const input = document.querySelector('[name="url"]');
-  const form = document.querySelector('form.rss-form');
+  const elements = {
+    postsContainer: document.querySelector('#posts'),
+    feedsContainer: document.querySelector('#feeds'),
+    modal: document.querySelector('#modal'),
+    feedback: document.querySelector('.feedback'),
+    input: document.querySelector('[name="url"]'),
+    submit: document.querySelector('[type="submit"]'),
+    form: document.querySelector('form.rss-form'),
+  };
+  // eslint-disable-next-line object-curly-newline
+  const { input, form, postsContainer, modal } = elements;
+  // eslint-disable-next-line no-unused-vars
+  const modalEl = new Modal(modal);
   const state = {
     rssLinks: [],
     form: {
@@ -101,38 +124,21 @@ export default function init() {
       errors: [],
       processState: 'filling',
     },
-    networkErrors: [],
     feeds: [],
     posts: [],
     uiState: {
-      readedPost: [],
-      showedPost: {},
+      readedPosts: [],
+      showedPostIndex: '',
     },
     lastUpdatedAt: 0,
   };
-  const watchedState = watch(state);
-  const loadRss = () => {
-    getRSS(watchedState.form.value)
-      .then((data) => parserRSS(data.contents))
-      .then((feedData) => {
-        const newFeed = createFeed(feedData.feed, watchedState.form.value);
-        const newPosts = createPosts(feedData.posts, newFeed.id);
-        watchedState.feeds = [...watchedState.feeds, newFeed];
-        updatePosts(watchedState, newPosts);
-        watchedState.rssLinks = [...watchedState.rssLinks, watchedState.form.value];
-        if (watchedState.feeds.length < 2) {
-          autoupdate(watchedState);
-        }
-        watchedState.form.processState = 'finished';
-        input.value = '';
-        watchedState.form.valid = 'true';
-      })
-      .catch((err) => {
-        handleErrors(err, watchedState);
-      });
-  };
+  const watchedState = watch(state, elements);
+  input.addEventListener('keyup', ({ target }) => {
+    watchedState.form.processState = 'filling';
+    watchedState.form.value = target.value;
+  });
 
-  const submitHandler = (event) => {
+  form.addEventListener('submit', (event) => {
     event.preventDefault();
     try {
       validateForm(watchedState.rssLinks).validateSync({
@@ -141,17 +147,19 @@ export default function init() {
       watchedState.form.valid = true;
       watchedState.form.errors = [];
       watchedState.form.processState = 'sending';
-      loadRss();
+      loadRss(watchedState, elements);
     } catch (err) {
       handleErrors(err, watchedState);
     }
-  };
-
-  input.addEventListener('keyup', ({ target }) => {
-    watchedState.form.processState = 'filling';
-    watchedState.form.value = target.value;
   });
 
-  form.addEventListener('submit', submitHandler);
-  initModal(watchedState);
+  postsContainer.addEventListener('click', ({ target }) => {
+    if (target.dataset.target === '#modal') {
+      const { uiState, posts } = watchedState;
+      const id = target.dataset.preview;
+      const showedPostIndex = posts.findIndex((post) => id === post.id);
+      uiState.showedPostIndex = showedPostIndex;
+      uiState.readedPosts = [...uiState.readedPosts, id];
+    }
+  });
 }

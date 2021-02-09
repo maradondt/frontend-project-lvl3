@@ -1,7 +1,7 @@
 import i18next from 'i18next';
 
-const renderErrors = (errors) => {
-  const feedback = document.querySelector('.feedback');
+const renderErrors = ({ form: { errors } }, elements) => {
+  const { feedback } = elements;
   if (!errors.length) {
     feedback.textContent = '';
     feedback.classList.remove('text-danger');
