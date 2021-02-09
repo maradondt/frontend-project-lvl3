@@ -7,16 +7,6 @@ import watch from './view/view.js';
 import parserRSS from './parserRSS.js';
 import en from './locales/en.js';
 
-yup.setLocale({
-  string: {
-    url: 'invalid-url',
-  },
-  mixed: {
-    default: 'Invalid',
-    notOneOf: 'rss already exist',
-  },
-});
-
 const validateUrl = ({ rssLinks }) => {
   const schema = yup.object().shape({
     url: yup.string()
@@ -158,14 +148,16 @@ const app = () => {
     event.preventDefault();
     const formData = new FormData(event.target);
     const currentUrl = formData.get('url');
-    try {
-      validateUrl(watchedState).validateSync({
-        url: currentUrl,
+
+    validateUrl(watchedState).validate({
+      url: currentUrl,
+    })
+      .then(() => {
+        loadRss(watchedState, currentUrl);
+      })
+      .catch((err) => {
+        handleErrors(err, watchedState);
       });
-      loadRss(watchedState, currentUrl);
-    } catch (err) {
-      handleErrors(err, watchedState);
-    }
   });
 
   postsContainer.addEventListener('click', ({ target }) => {
@@ -184,8 +176,20 @@ const init = () => i18next.init({
   resources: {
     en,
   },
-}).then(() => {
-  app();
-});
+})
+  .then(() => {
+    yup.setLocale({
+      string: {
+        url: 'invalid-url',
+      },
+      mixed: {
+        default: 'Invalid',
+        notOneOf: 'rss already exist',
+      },
+    });
+  })
+  .then(() => {
+    app();
+  });
 
 export default init;
