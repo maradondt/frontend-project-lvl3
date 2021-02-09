@@ -7,11 +7,11 @@ import watch from './view/view.js';
 import parserRSS from './parserRSS.js';
 import en from './locales/en.js';
 
-const validateUrl = ({ rssLinks }) => {
+const validateUrl = () => {
   const schema = yup.object().shape({
     url: yup.string()
       .url()
-      .notOneOf(rssLinks)
+      // .notOneOf(rssLinks)
       .required(),
   });
   return schema;
@@ -148,16 +148,17 @@ const app = () => {
     event.preventDefault();
     const formData = new FormData(event.target);
     const currentUrl = formData.get('url');
-
-    validateUrl(watchedState).validate({
-      url: currentUrl,
-    })
-      .then(() => {
-        loadRss(watchedState, currentUrl);
-      })
-      .catch((err) => {
-        handleErrors(err, watchedState);
+    try {
+      validateUrl().validateSync({
+        url: currentUrl,
       });
+      if ((watchedState.rssLinks.findIndex((url) => url === currentUrl)) !== -1) {
+        throw new Error('rss already exist');
+      }
+      loadRss(watchedState, currentUrl);
+    } catch (err) {
+      handleErrors(err, watchedState);
+    }
   });
 
   postsContainer.addEventListener('click', ({ target }) => {
