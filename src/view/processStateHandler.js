@@ -22,6 +22,7 @@ export default function processStateHandler({ form: { processState } }, elements
     case ('finished'):
       renderSuccess(processState, elements);
       input.readOnly = false;
+      input.value = '';
       submit.disabled = false;
       break;
     case ('failed'):

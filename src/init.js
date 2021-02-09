@@ -27,7 +27,13 @@ const handleErrors = (err, state) => {
     watchedState.form.valid = false;
   }
 };
-const getProxyUrl = (url) => `https://hexlet-allorigins.herokuapp.com/get?url=${url}&disableCache=true`;
+
+const getProxyUrl = (url) => {
+  const urlWithProxy = new URL('/get', 'https://hexlet-allorigins.herokuapp.com');
+  urlWithProxy.searchParams.set('url', url);
+  urlWithProxy.searchParams.set('disableCache', 'true');
+  return urlWithProxy.toString();
+};
 
 const getRSS = (url) => axios
   .get(getProxyUrl(url), { timeout: 10000 })
@@ -72,22 +78,25 @@ const autoupdate = (state) => {
   setTimeout(autoupdate, delayInSeconds * 1000, watchedState);
 };
 
-const loadRss = (state, elements) => {
+const loadRss = (state, url) => {
   const watchedState = state;
-  const { input } = elements;
-  getRSS(watchedState.form.value)
+  watchedState.form.valid = true;
+  watchedState.form.errors = [];
+  watchedState.form.processState = 'sending';
+  getRSS(url)
     .then((data) => parserRSS(data.contents))
     .then((feedData) => {
-      const newFeed = createFeed(feedData.feed, watchedState.form.value);
+      const newFeed = createFeed(feedData.feed, url);
       const newPosts = createPosts(feedData.posts, newFeed.id);
       watchedState.feeds = [...watchedState.feeds, newFeed];
       updatePosts(watchedState, newPosts);
-      watchedState.rssLinks = [...watchedState.rssLinks, watchedState.form.value];
+      watchedState.rssLinks = [...watchedState.rssLinks, url];
       if (watchedState.feeds.length < 2) {
         autoupdate(watchedState);
       }
+    })
+    .then(() => {
       watchedState.form.processState = 'finished';
-      input.value = '';
       watchedState.form.valid = 'true';
     })
     .catch((err) => {
@@ -105,15 +114,13 @@ const app = () => {
     submit: document.querySelector('[type="submit"]'),
     form: document.querySelector('form.rss-form'),
   };
-  // eslint-disable-next-line object-curly-newline
-  const { input, form, postsContainer, modal } = elements;
+  const { form, postsContainer, modal } = elements;
   // eslint-disable-next-line no-unused-vars
   const modalEl = new Modal(modal);
   const state = {
     rssLinks: [],
     form: {
       valid: true,
-      value: '',
       errors: [],
       processState: 'filling',
     },
@@ -126,24 +133,16 @@ const app = () => {
     lastUpdatedAt: 0,
   };
   const watchedState = watch(state, elements);
-  input.addEventListener('keyup', ({ target }) => {
-    watchedState.form.processState = 'filling';
-    watchedState.form.value = target.value;
-  });
 
   form.addEventListener('submit', (event) => {
     event.preventDefault();
     const formData = new FormData(event.target);
     const currentUrl = formData.get('url');
-    console.log(` url = ${currentUrl}`);
     try {
       validateUrl(watchedState).validateSync({
         url: currentUrl,
       });
-      watchedState.form.valid = true;
-      watchedState.form.errors = [];
-      watchedState.form.processState = 'sending';
-      loadRss(watchedState, elements);
+      loadRss(watchedState, currentUrl);
     } catch (err) {
       handleErrors(err, watchedState);
     }
