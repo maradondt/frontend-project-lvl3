@@ -44,13 +44,13 @@ const getProxyUrl = (url) => {
   return urlWithProxy.toString();
 };
 
-const getRSS = (url) => axios
-  .get(getProxyUrl(url), { timeout: 10000 })
-  .then((responce) => responce.data)
-  .catch((err) => {
-    console.error(err);
-    throw new Error('Network Error');
-  });
+// const getRSS = (url) => axios
+//   .get(getProxyUrl(url), { timeout: 10000 })
+//   .then((responce) => responce.data)
+//   .catch((err) => {
+//     console.error(err);
+//     throw new Error('Network Error');
+//   });
 
 const createFeed = ({ title, description }, url) => ({
   title,
@@ -70,7 +70,9 @@ const autoupdate = (state) => {
   const delayInSeconds = 5;
   watchedState.updated = true;
   watchedState.feeds.forEach((feed) => {
-    getRSS(feed.url)
+    axios
+      .get(getProxyUrl(feed.url), { timeout: 10000 })
+      .then((responce) => responce.data)
       .then((data) => parserRSS(data.contents))
       .then(({ posts }) => createPosts(posts, feed.id))
       .then((posts) => posts.filter((post) => Date.parse(post.date) > watchedState.lastUpdatedAt))
@@ -93,7 +95,9 @@ const loadRss = (state, url) => {
   watchedState.form.valid = true;
   watchedState.form.errors = [];
   watchedState.form.processState = 'sending';
-  getRSS(url)
+  axios
+    .get(getProxyUrl(url), { timeout: 10000 })
+    .then((responce) => responce.data)
     .then((data) => parserRSS(data.contents))
     .then((feedData) => {
       const newFeed = createFeed(feedData.feed, url);
