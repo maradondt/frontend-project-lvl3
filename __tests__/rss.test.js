@@ -1,9 +1,9 @@
 import fs from 'fs';
 import path from 'path';
-import result from '../__fixtures__/rss/rssoutput.js';
+import result from '../__fixtures__/rssoutput.js';
 import parserRSS from '../src/parserRSS.js';
 
-const getFixturePath = (filename) => path.join('__fixtures__', 'rss', filename);
+const getFixturePath = (filename) => path.join('__fixtures__', filename);
 
 let rssXml;
 

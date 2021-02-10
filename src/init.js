@@ -7,11 +7,11 @@ import watch from './view/view.js';
 import parserRSS from './parserRSS.js';
 import en from './locales/en.js';
 
-const validateUrl = () => {
+const validateUrl = (rssLinks) => {
   const schema = yup.object().shape({
     url: yup.string()
       .url()
-      // .notOneOf(rssLinks)
+      .notOneOf(rssLinks)
       .required(),
   });
   return schema;
@@ -44,13 +44,13 @@ const getProxyUrl = (url) => {
   return urlWithProxy.toString();
 };
 
-// const getRSS = (url) => axios
-//   .get(getProxyUrl(url), { timeout: 10000 })
-//   .then((responce) => responce.data)
-//   .catch((err) => {
-//     console.error(err);
-//     throw new Error('Network Error');
-//   });
+const getRSS = (url) => axios
+  .get(getProxyUrl(url), { timeout: 10000 })
+  .then((responce) => responce.data)
+  .catch((err) => {
+    console.log(err);
+    throw new Error('Network Error');
+  });
 
 const createFeed = ({ title, description }, url) => ({
   title,
@@ -70,9 +70,7 @@ const autoupdate = (state) => {
   const delayInSeconds = 5;
   watchedState.updated = true;
   watchedState.feeds.forEach((feed) => {
-    axios
-      .get(getProxyUrl(feed.url), { timeout: 10000 })
-      .then((responce) => responce.data)
+    getRSS(feed.url)
       .then((data) => parserRSS(data.contents))
       .then(({ posts }) => createPosts(posts, feed.id))
       .then((posts) => posts.filter((post) => Date.parse(post.date) > watchedState.lastUpdatedAt))
@@ -95,9 +93,7 @@ const loadRss = (state, url) => {
   watchedState.form.valid = true;
   watchedState.form.errors = [];
   watchedState.form.processState = 'sending';
-  axios
-    .get(getProxyUrl(url), { timeout: 10000 })
-    .then((responce) => responce.data)
+  getRSS(url)
     .then((data) => parserRSS(data.contents))
     .then((feedData) => {
       const newFeed = createFeed(feedData.feed, url);
@@ -153,12 +149,9 @@ const app = () => {
     const formData = new FormData(event.target);
     const currentUrl = formData.get('url');
     try {
-      validateUrl().validateSync({
+      validateUrl(watchedState.rssLinks).validateSync({
         url: currentUrl,
       });
-      if ((watchedState.rssLinks.findIndex((url) => url === currentUrl)) !== -1) {
-        throw new Error('rss already exist');
-      }
       loadRss(watchedState, currentUrl);
     } catch (err) {
       handleErrors(err, watchedState);
