@@ -40,23 +40,15 @@ const handleErrors = (err, state) => {
 
 const getProxyUrl = (url) => {
   const urlWithProxy = new URL('/get', 'https://hexlet-allorigins.herokuapp.com');
-  urlWithProxy.searchParams.set('disableCache', 'true');
   urlWithProxy.searchParams.set('url', url);
-  console.log('PROXYURL = ', urlWithProxy.toString());
+  urlWithProxy.searchParams.set('disableCache', 'true');
   return urlWithProxy.toString();
 };
 
 const getRSS = (url) => axios
   .get(getProxyUrl(url), { timeout: 10000 })
   .then((responce) => responce.data)
-  .catch((err) => {
-    console.log(err.stack);
-    if (err.request) {
-      console.log(err.request);
-    }
-    if (err.responce) {
-      console.log(err.responce);
-    }
+  .catch(() => {
     throw new Error('Network Error');
   });
 
@@ -73,28 +65,28 @@ const updatePosts = (state, posts) => {
   watchedState.lastUpdatedAt = Date.now();
 };
 
-const autoupdate = (state) => {
-  const watchedState = state;
-  const delayInSeconds = 5;
-  watchedState.updated = true;
-  watchedState.feeds.forEach((feed) => {
-    getRSS(feed.url)
-      .then((data) => parserRSS(data.contents))
-      .then(({ posts }) => createPosts(posts, feed.id))
-      .then((posts) => posts.filter((post) => Date.parse(post.date) > watchedState.lastUpdatedAt))
-      .then((newPosts) => {
-        if (newPosts.length > 0) {
-          updatePosts(watchedState, newPosts);
-          watchedState.updated = false;
-        }
-      })
-      .catch(() => {
-        const err = new Error('Update Error');
-        watchedState.form.errors = [...watchedState.form.errors, err];
-      });
-  });
-  setTimeout(autoupdate, delayInSeconds * 1000, watchedState);
-};
+// const autoupdate = (state) => {
+//   const watchedState = state;
+//   const delayInSeconds = 5;
+//   watchedState.updated = true;
+//   watchedState.feeds.forEach((feed) => {
+//     getRSS(feed.url)
+//       .then((data) => parserRSS(data.contents))
+//       .then(({ posts }) => createPosts(posts, feed.id))
+//      .then((posts) => posts.filter((post) => Date.parse(post.date) > watchedState.lastUpdatedAt))
+//       .then((newPosts) => {
+//         if (newPosts.length > 0) {
+//           updatePosts(watchedState, newPosts);
+//           watchedState.updated = false;
+//         }
+//       })
+//       .catch(() => {
+//         const err = new Error('Update Error');
+//         watchedState.form.errors = [...watchedState.form.errors, err];
+//       });
+//   });
+//   setTimeout(autoupdate, delayInSeconds * 1000, watchedState);
+// };
 
 const loadRss = (state, url) => {
   const watchedState = state;
@@ -109,9 +101,9 @@ const loadRss = (state, url) => {
       watchedState.feeds = [...watchedState.feeds, newFeed];
       updatePosts(watchedState, newPosts);
       watchedState.rssLinks = [...watchedState.rssLinks, url];
-      if (watchedState.feeds.length < 2) {
-        autoupdate(watchedState);
-      }
+      // if (watchedState.feeds.length < 2) {
+      //   autoupdate(watchedState);
+      // }
     })
     .then(() => {
       watchedState.form.processState = 'finished';
