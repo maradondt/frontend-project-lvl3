@@ -31,7 +31,6 @@ export default function processStateHandler({ form: { processState } }, elements
       submit.disabled = false;
       break;
     default:
-      console.log('Unknow state ', processState);
-      break;
+      throw new Error(`Unknow state: ${processState}`);
   }
 }

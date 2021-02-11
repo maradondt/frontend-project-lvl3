@@ -5,12 +5,9 @@ import parserRSS from '../src/parserRSS.js';
 
 const getFixturePath = (filename) => path.join('__fixtures__', filename);
 
-let rssXml;
+const pathTorrs = getFixturePath('rssinput.xml');
+const rssXml = fs.readFileSync(pathTorrs);
 
-beforeAll(() => {
-  const pathTorrs = getFixturePath('rssinput.xml');
-  rssXml = fs.readFileSync(pathTorrs);
-});
 test('RSS parser test', () => {
   expect(parserRSS(rssXml)).toMatchObject(result);
 });
