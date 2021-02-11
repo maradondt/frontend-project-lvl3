@@ -40,6 +40,16 @@ test('rss has been loaded', async () => {
   expect(await screen.findByText(/Rss has been loaded/i)).toBeInTheDocument();
 });
 
+test('unique', async () => {
+  applyNock(rssUrl, { contents: rss });
+  userEvent.type(elements.input, rssUrl);
+  userEvent.click(elements.submit);
+  expect(await screen.findByText(/Rss has been loaded/i)).toBeInTheDocument();
+  userEvent.type(elements.input, rssUrl);
+  userEvent.click(elements.submit);
+  expect(await screen.findByText(/Rss already exists/i)).toBeInTheDocument();
+});
+
 test('invalid rss', async () => {
   applyNock('http://norss.ru', 'invalidrss');
   userEvent.type(elements.input, 'http://norss.ru');
