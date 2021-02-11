@@ -38,20 +38,25 @@ const handleErrors = (err, state) => {
   }
 };
 
-const getProxyUrl = (url, cache) => {
+const getProxyUrl = (url) => {
   const urlWithProxy = new URL('/get', 'https://hexlet-allorigins.herokuapp.com');
+  urlWithProxy.searchParams.set('disableCache', 'true');
   urlWithProxy.searchParams.set('url', url);
-  if (cache) {
-    urlWithProxy.searchParams.set('disableCache', 'true');
-  }
+  console.log('PROXYURL = ', urlWithProxy.toString());
   return urlWithProxy.toString();
 };
 
-const getRSS = (url, cache = false) => axios
-  .get(getProxyUrl(url, cache), { timeout: 10000 })
+const getRSS = (url) => axios
+  .get(getProxyUrl(url), { timeout: 10000 })
   .then((responce) => responce.data)
   .catch((err) => {
-    console.log(err);
+    console.log(err.stack);
+    if (err.request) {
+      console.log(err.request);
+    }
+    if (err.responce) {
+      console.log(err.responce);
+    }
     throw new Error('Network Error');
   });
 
@@ -73,7 +78,7 @@ const autoupdate = (state) => {
   const delayInSeconds = 5;
   watchedState.updated = true;
   watchedState.feeds.forEach((feed) => {
-    getRSS(feed.url, true)
+    getRSS(feed.url)
       .then((data) => parserRSS(data.contents))
       .then(({ posts }) => createPosts(posts, feed.id))
       .then((posts) => posts.filter((post) => Date.parse(post.date) > watchedState.lastUpdatedAt))
