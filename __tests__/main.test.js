@@ -64,5 +64,5 @@ test('modal', async () => {
   await screen.findByText(/Rss has been loaded/i);
   const previewBtns = await screen.findAllByRole('button', { name: /preview/i });
   userEvent.click(previewBtns[0]);
-  expect(await screen.findByText('Cupidatat aliqua minim incididunt adipisicing officia proident quis pariatur fugiat consequat.')).toBeInTheDocument();
+  expect(await screen.findByText('Cupidatat aliqua minim incididunt adipisicing officia proident quis pariatur fugiat consequat.')).toBeVisible();
 });
