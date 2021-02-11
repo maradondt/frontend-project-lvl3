@@ -1,3 +1,4 @@
+import 'core-js';
 import _ from 'lodash';
 import { Modal } from 'bootstrap';
 import axios from 'axios';
